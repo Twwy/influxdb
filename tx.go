@@ -78,6 +78,7 @@ func (tx *tx) CreateMapReduceJobs(stmt *influxql.SelectStatement, tagKeys []stri
 				return nil, fmt.Errorf("unknown field or tag name in select clause: %s", n)
 			}
 			selectTags = append(selectTags, n)
+			fmt.Println("selectTags:", selectTags)
 		}
 		for _, n := range stmt.NamesInWhere() {
 			if n == "time" {
@@ -136,18 +137,34 @@ func (tx *tx) CreateMapReduceJobs(stmt *influxql.SelectStatement, tagKeys []stri
 			interval = d.Nanoseconds()
 		}
 
+		selectedTagSets, err := m.tagSets(stmt, selectTags)
+		if err != nil {
+			return nil, err
+		}
+
 		// get the sorted unique tag sets for this query.
 		tagSets, err := m.tagSets(stmt, tagKeys)
 		if err != nil {
 			return nil, err
 		}
 
-		//jobs := make([]*influxql.MapReduceJob, 0, len(tagSets))
+		/* fmt.Println("tagSets:", tagSets) */
+		/* fmt.Println("tagSets[0].Tags:", tagSets[0].Tags) */
+
+		var selectedTagMap map[string]string
+
+		if len(selectedTagSets) > 0 {
+			selectedTagMap = selectedTagSets[0].Tags
+		}
+
+		/* fmt.Println("selectedTagMap:", selectedTagMap) */
+
 		for _, t := range tagSets {
 			// make a job for each tagset
 			job := &influxql.MapReduceJob{
 				MeasurementName: m.Name,
 				TagSet:          t,
+				SelectedTagMap:  selectedTagMap,
 				TMin:            tmin.UnixNano(),
 				TMax:            tmax.UnixNano(),
 			}

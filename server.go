@@ -2320,6 +2320,7 @@ func (s *Server) executeSelectStatement(statementID int, stmt *influxql.SelectSt
 			return row.Err
 		} else {
 			resultSent = true
+			fmt.Println("row:", row)
 			results <- &Result{StatementID: statementID, Series: []*influxql.Row{row}}
 		}
 	}

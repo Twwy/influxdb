@@ -460,9 +460,11 @@ func runTestsData(t *testing.T, testName string, nodes Cluster, database, retent
 			expected: `{"results":[{"series":[{"name":"cpu","columns":["time","value"],"values":[["2015-02-28T01:03:36.703820946Z",100]]}]}]}`,
 		},
 		{
-			name:     "single point, select with now(), two queries",
-			query:    `SELECT * FROM "%DB%"."%RP%".cpu WHERE time < now();SELECT * FROM "%DB%"."%RP%".cpu WHERE time < now()`,
-			expected: `{"results":[{"series":[{"name":"cpu","columns":["time","value"],"values":[["2015-02-28T01:03:36.703820946Z",100]]}]},{"series":[{"name":"cpu","columns":["time","value"],"values":[["2015-02-28T01:03:36.703820946Z",100]]}]}]}`,
+			reset:    true,
+			name:     "XXX selecting a tag",
+			write:    `{"database" : "%DB%", "retentionPolicy" : "%RP%", "points": [{"name": "gpu", "time": "2015-02-28T01:03:36.703820946Z", "tags": {"host": "server01"}, "fields": {"value": 100}}]}`,
+			query:    `SELECT host, value FROM "%DB%"."%RP%".gpu`,
+			expected: `{"results":[{"series":[{"name":"gpu","tags":{"host":"server01"},"columns":["time","value"],"values":[["2015-02-28T01:03:36.703820946Z",100]]}]}]}`,
 		},
 
 		{
@@ -1538,15 +1540,15 @@ func runTestsData(t *testing.T, testName string, nodes Cluster, database, retent
 				urlDb = tt.queryDb
 			}
 			qry := rewriteDbRp(tt.query, database, retention)
-			got, ok, nOK := queryAndWait(t, qNodes, rewriteDbRp(urlDb, database, retention), qry, rewriteDbRp(tt.expected, database, retention), rewriteDbRp(tt.expectPattern, database, retention), 30*time.Second)
+			got, ok, nOK := queryAndWait(t, qNodes, rewriteDbRp(urlDb, database, retention), qry, rewriteDbRp(tt.expected, database, retention), rewriteDbRp(tt.expectPattern, database, retention), 200*time.Millisecond)
 			if !ok {
 				if tt.expected != "" {
 					t.Errorf("Test #%d: \"%s:%s\" failed\n  query: %s\n  exp: %s\n  got: %s\n%d nodes responded correctly", i, testName, name, qry, rewriteDbRp(tt.expected, database, retention), got, nOK)
 				} else {
 					t.Errorf("Test #%d: \"%s:%s\" failed\n  query: %s\n  exp: %s\n  got: %s\n%d nodes responded correctly", i, testName, name, qry, rewriteDbRp(tt.expectPattern, database, retention), got, nOK)
 				}
-				dumpClusterDiags(t, name, nodes)
-				dumpClusterStats(t, name, nodes)
+				/* dumpClusterDiags(t, name, nodes) */
+				/* dumpClusterStats(t, name, nodes) */
 			}
 		}
 	}
