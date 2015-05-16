@@ -460,7 +460,6 @@ func runTestsData(t *testing.T, testName string, nodes Cluster, database, retent
 			expected: `{"results":[{"series":[{"name":"cpu","columns":["time","value"],"values":[["2015-02-28T01:03:36.703820946Z",100]]}]}]}`,
 		},
 		{
-			reset:    true,
 			name:     "XXX selecting a tag",
 			write:    `{"database" : "%DB%", "retentionPolicy" : "%RP%", "points": [{"name": "gpu", "time": "2015-02-28T01:03:36.703820946Z", "tags": {"host": "server01"}, "fields": {"value": 100}}]}`,
 			query:    `SELECT host, value FROM "%DB%"."%RP%".gpu`,
