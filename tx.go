@@ -317,6 +317,10 @@ func (l *LocalMapper) Open() error {
 	return nil
 }
 
+func (l *LocalMapper) Tags() []string {
+	return l.selectTags
+}
+
 // Close closes the LocalMapper.
 func (l *LocalMapper) Close() {
 	_ = l.txn.Rollback()

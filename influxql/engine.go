@@ -652,6 +652,8 @@ type Mapper interface {
 	// hitting the local bolt store
 	Open() error
 
+	Tags() []string
+
 	// Close will close the mapper (either the bolt transaction or the request)
 	Close()
 
